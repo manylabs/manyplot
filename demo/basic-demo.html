@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang=en>
+<head>
+<meta charset=utf-8>
+<title>Manyplot Demo</title>
+<script type="text/javascript" src="../manyplot.js"></script>
+<style>
+.plotButton {
+	padding: 10px;
+}
+</style>
+</head>
+<body>
+
+<div>
+	<button class="plotButton" onclick="g_plotterHandler.zoomIn()">Zoom In</button>
+	<button class="plotButton" onclick="g_plotterHandler.zoomOut()">Zoom Out</button>
+	<button class="plotButton" onclick="setMode('line')">Line Plot</button>
+	<button class="plotButton" onclick="setMode('histogram')">Histogram</button>
+	<button class="plotButton" onclick="setMode('scatter')">Scatter Plot</button>
+</div>
+<div>
+	<canvas id="plot" width="900" height="500"></canvas>
+</div>
+
+<script>
+
+var g_plotterHandler = null;
+var g_dataT = null;
+var g_dataA = null;
+var g_dataB = null;
+
+document.addEventListener('DOMContentLoaded', function(event) { 
+
+	// get the canvas element
+	var canvas = document.getElementById('plot');
+	
+	// create plot handler object
+	g_plotterHandler = createPlotHandler(canvas);
+
+	// generate some data
+	var dataCount = 1000000;
+	var timestamps = [];
+	var valuesA = [];
+	var valuesB = [];
+	var timestamp = new Date() * 0.001;
+	var valueA = 100;
+	var valueB = 100;
+	for (var i = 0; i < dataCount; i++) {
+		valuesA.push(valueA);
+		valuesB.push(valueB);
+		timestamps.push( timestamp );
+		valueA += Math.random() - 0.5;
+		valueB += Math.random() - 0.5;
+		timestamp += 0.1;
+	}
+	
+	// create column objects from arrays
+	g_dataT = createDataColumn('timestamp', timestamps);
+	g_dataT.type = 'timestamp';
+	g_dataA = createDataColumn('value A', valuesA);
+	g_dataB = createDataColumn('value B', valuesB);
+	g_dataSmallA = createDataColumn('value A', valuesA.slice(0, 1000));
+	g_dataSmallB = createDataColumn('value B', valuesB.slice(0, 1000));
+	
+	setMode('line');
+} );
+
+function setMode(mode) {
+	switch(mode) {
+	case 'line':
+		var dataPairs = [
+			{ 
+				'xData': g_dataT,
+				'yData': g_dataA,
+			},
+			{ 
+				'xData': g_dataT,
+				'yData': g_dataB,
+			}
+		];
+		break;
+	case 'scatter':
+		var dataPairs = [
+			{ 
+				'xData': g_dataSmallA,
+				'yData': g_dataSmallB,
+			},
+		];
+		break;
+	case 'histogram':
+		var dataPairs = [
+			{ 
+				'xData': g_dataSmallA,
+				'yData': g_dataSmallB,
+			},
+		];
+		break;
+	}
+	g_plotterHandler.plotter.setData(dataPairs);
+	g_plotterHandler.plotter.setPlotMode(mode);
+	g_plotterHandler.drawPlot(null, null, {'histogramBuckets': 10});
+}
+
+</script>
+</body>
+</html>
